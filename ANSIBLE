@@ -535,7 +535,7 @@ vars inside the debug moudle:
 
 - hosts: dev
   vars:
-    name: raham
+    name: raghu
     loc: hyderabad
   tasks:
     - debug:
