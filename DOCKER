@@ -1,0 +1,527 @@
+MONOLITHIC    : Single server multiple services single DB.
+MICRO SERVICE : Multiple servers Multiple services with multiple DB's
+
+how to select the architecture: Based on application and its services.
+
+in Micro services we dont use servers, we use Containers.
+
+
+Container: is a Virtual Machine without OS.
+Docker: its a tool used to create Container.
+Image: consist of os & packages which are already installed.
+
+server = Vm = conatiner
+
+Docker: 
+
+It is an open source centralized platform designed to create, deploy and run applications.
+Docker is written in the Go language.
+Docker creates containers on host O.S to run applications. (computer/server os)
+We can install Docker on any O.S but the docker engine runs natively on Linux distribution.
+It allows applications to use the same Linux kernel as a system on the host computer, rather than creating a whole virtual O.S.
+Before Docker Docker performs O.S level Virtualization also known as Containerization.
+process of packing application along with its dependencies.
+many users face problems that a particular code is running in the developer’s system but not in the user system.
+It was initially released in March 2013, and developed by Solomon Hykes and Sebastian Pahl.
+Docker is a set of platform-as-a-service that use O.S level Virtualization, where as VM ware uses Hardware level Virtualization.
+Container have O.S files but its negligible in size compared to original files of that O.S.
+
+
+COMPONENTS:
+
+CLIENT: It takes the commands and executes with communication docker daemon
+HOST: The place where you installed docker.
+DAEMON: Deals with docker componets(images, containers, volumes ----). it is inside docker host.
+REGISTRY: It stores all the Images.
+
+============================================
+
+DAY-02:
+Installation:
+yum install docker -y
+systemctl restart docker.service
+systemctl status docker.service
+docker version
+
+DOCKER COMMANDS:
+
+docker pull ubuntu: to get ubuntu image from registry
+docker images : to list the images 
+docker run ubuntu : to create a conatiners
+docker ps -a  : to list all the containers
+docker ps : to list running containers only
+docker run --name raham1 ubuntu : to give the name for container
+docker run -it --name raham2 ubuntu : to go inside of a container
+(it = interactive terminal, will go inside container, -d means detach mode will not go inside the container)
+cat /etc/os-release : to see the flavour of linux
+docker inspect cont-name : to see the full infromation of a container.
+docker attach cont-name : to go inside the container.
+
+
+inside container: note: in ubuntu pkg manager is apt (advance package tool)
+apt update -y
+apt install maven -y
+apt install mysql-server -y
+mkdir raghu & touch abc.txt
+raham2 (cont) -- > install maven,mysql db & files -- > image form container -- > image
+
+os level of virtualization --- > content inside the os will be on image now
+
+ctrl p q : to exit from container
+
+docker commit raham2 swiggy:v1     : to create image from container
+
+====================================================================================
+
+DOCKER FILE: 
+It is an automated method to create docker images.
+in docker file D must be captial.
+in single folder we need to have only one docker file.
+docker file will have some componets inside it.
+each component is on CAPITAL letter.
+
+write Docker file -- > Build -- > Image
+
+docker build -t image-name .
+
+FROM : Used for base image
+RUN  : Used to execute commands (During image creation)
+CMD  : Used to execute commands (During Container creation)
+COPY : used to copy local files to container
+ADD : used to files on internet to container & used for exctraction of files.
+WORKDIR : Takes you to the desried directory ( defaut / = /tmp)
+LABEL : Used to attach labels to containers like email, author ----
+ENV   : To pass environment variables (inside the containers)
+args  : to pass value (outside of container)
+
+EXAMPLE-1:
+
+FROM ubuntu
+RUN apt update -y
+RUN apt install maven -y
+RUN mkdir raghu
+RUN touch raghu/abc.txt
+================================================
+EXAMPLE-2:
+FROM ubuntu
+RUN apt update -y
+RUN apt install maven -y
+RUN mkdir raghu
+RUN touch raghu/abc.txt
+COPY index.html /tmp
+COPY apache-maven-3.6.3-bin.tar.gz /tmp
+ADD https://dlcdn.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz /opt
+=======================================================
+EXAMPLE-3:
+FROM ubuntu
+RUN apt update -y
+RUN apt install maven -y
+RUN mkdir raghu
+RUN touch raghu/abc.txt
+WORKDIR /tmp
+==========================
+EXAMPLE-4:
+FROM ubuntu
+RUN apt update -y
+RUN apt install maven -y
+RUN mkdir raghu
+RUN touch raghu/abc.txt
+LABEL user raghu
+ENV client swiggy
+
+=================================================================================================
+
+  DAY-03:
+
+VOLUMES: 
+
+By default when we create a volume the data is also going store on host.
+
+PART-1 (CONT -- > CONT)
+
+1. DOCKER FILE
+
+FROM ubuntu
+VOLUME ["/volume1"]
+
+docker build -t raghu:v1 .
+docker run -it --name cont1 raghu:v1
+crerate some files inside cont-1
+docker run -it --name cont2 --volumes-from=cont1 --privileged=true ubuntu
+
+2. FROM RUNTIME 
+
+docker run -it --name cont3 -v volume2 ubuntu
+cd volume2  -- > create some files
+docker run -it --name cont4 --volumes-from=cont3 --privileged=true ubuntu
+
+3. FROM COMMANDS (Volume Mounting)
+
+docker volume ls
+docker volume create raham1
+docker volume inspect raham1
+cd /var/lib/docker/volumes/raham1/_data
+create some files 
+docker run -it --name cont5 --mount source=raham1,destination=/raham1 ubuntu
+
+
+PART-2: (CONT -- > LOCAL)
+
+CONT --- > CONT COPIED THE FILES
+I WANT TO COPY CONTENT FROM CONTAINER TO MY LOCAL 
+docker volume ls
+docker volume inspect raham1
+cd /var/lib/docker/volumes/raham1/_data
+cp * -R /root/
+
+PART-3: (LOCAL -- > CONT)
+
+1. Dockerfile
+
+2. 
+cd /home/ec2-user
+touch file{1..5}
+docker run -it --name cont7 -v /home/ec2-user:/xyz ubuntu
+cd /xyz -- > 11 -- > create files -- > local -- >
+
+================================================================================
+
+DOCKER SYSTEM COMMANDS: To show the memory utilization of Docker Components.
+
+docker info
+docker system df
+docker system df -v
+docker system prune --all  : Remove all unused images not just dangling ones
+docker system prune --force: Do not prompt for confirmation
+docker system prune --volumes : To remove unused volumes
+
+
+==========================================================================
+
+JENKINS SETUP USING DOCKER IMAGES:
+
+docker run -it --name jenkins jenkins/jenkins:lts
+
+
+==========================================================================
+
+DEPLOYMENT:
+
+vim Dockerfile
+
+FROM ubuntu
+RUN apt-get update -y
+RUN apt-get install apache2 -y
+COPY index.html /var/www/html/
+CMD ["/usr/sbin/apachectl", "-D", "FOREGROUND"]
+
+
+docker build -t image:v1 .
+docker run -itd --name app1 -p 82:80 image
+
+82: container port & 80: image port (installed httpd -- > 80)
+
+
+index.html:
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {font-family: Arial, Helvetica, sans-serif;}
+
+/* Full-width input fields */
+input[type=text], input[type=password] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+/* Set a style for all buttons */
+button {
+  background-color: #04AA6D;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+/* Extra styles for the cancel button */
+.cancelbtn {
+  width: auto;
+  padding: 10px 18px;
+  background-color: #f44336;
+}
+
+/* Center the image and position the close button */
+.imgcontainer {
+  text-align: center;
+  margin: 24px 0 12px 0;
+  position: relative;
+}
+
+img.avatar {
+  width: 40%;
+  border-radius: 50%;
+}
+
+.container {
+  padding: 16px;
+}
+
+span.psw {
+  float: right;
+  padding-top: 16px;
+}
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  padding-top: 60px;
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #fefefe;
+  margin: 5% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button (x) */
+.close {
+  position: absolute;
+  right: 25px;
+  top: 0;
+  color: #000;
+  font-size: 35px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: red;
+  cursor: pointer;
+}
+
+/* Add Zoom Animation */
+.animate {
+  -webkit-animation: animatezoom 0.6s;
+  animation: animatezoom 0.6s
+}
+
+@-webkit-keyframes animatezoom {
+  from {-webkit-transform: scale(0)} 
+  to {-webkit-transform: scale(1)}
+}
+  
+@keyframes animatezoom {
+  from {transform: scale(0)} 
+  to {transform: scale(1)}
+}
+
+/* Change styles for span and cancel button on extra small screens */
+@media screen and (max-width: 300px) {
+  span.psw {
+     display: block;
+     float: none;
+  }
+  .cancelbtn {
+     width: 100%;
+  }
+}
+</style>
+</head>
+<body>
+
+<h2>DevOps By raghu V:2.0</h2>
+
+<button onclick="document.getElementById('id01').style.display='block'" style="width:auto;">Login</button>
+
+<div id="id01" class="modal">
+  
+  <form class="modal-content animate" action="/action_page.php" method="post">
+    <div class="imgcontainer">
+      <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>
+      <img src="img_avatar2.png" alt="Avatar" class="avatar">
+    </div>
+
+    <div class="container">
+      <label for="uname"><b>Username</b></label>
+      <input type="text" placeholder="Enter Username" name="uname" required>
+
+      <label for="psw"><b>Password</b></label>
+      <input type="password" placeholder="Enter Password" name="psw" required>
+        
+      <button type="submit">Login</button>
+      <label>
+        <input type="checkbox" checked="checked" name="remember"> Remember me
+      </label>
+    </div>
+
+    <div class="container" style="background-color:#f1f1f1">
+      <button type="button" onclick="document.getElementById('id01').style.display='none'" class="cancelbtn">Cancel</button>
+      <span class="psw">Forgot <a href="#">password?</a></span>
+    </div>
+  </form>
+</div>
+
+<script>
+// Get the modal
+var modal = document.getElementById('id01');
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+</script>
+
+</body>
+</html>
+
+=============================================================================================
+  
+DAY-04:
+
+DOCKER COMPOSE: Its a tool on docker used to create multiple containers at a single time.
+
+COMPOSE FILE: we will give the infromation of the containers (Image, Port, Volume -----)
+it is on YAML Format Which works on KEY-VALUE Pair.
+
+HOW IT WORKS:
+
+IMAGE -- > DOCKER FILE & INDEX.HTML
+CONTAINER -- > COMPOSE.YML
+
+
+Dockerfile
+
+FROM ubuntu
+RUN apt update -y
+RUN apt install apache2 -y
+COPY index.html /var/www/html
+CMD ["/usr/sbin/apachectl", "-D", "FOREGROUND"]
+
+docker-compose.yml
+
+version: '3'
+services:
+  train:
+    image: train:v1
+    ports:
+      - "8000:80"
+    volumes:
+      - "trainvolume"
+  movies:
+    image: movies:v1
+    ports:
+      - "8001:80"
+    volumes:
+      - "movievolume"
+  recharge:
+    image: recharge:v1
+    ports:
+      - "8002:80"
+    volumes:
+      - "rechargevolume"
+
+
+COMMANDS:
+
+docker-compose ps
+docker-compose stop
+docker-compose start
+docker-compose pause
+docker-compose unpause
+docker-compose down (stop -- > delete)
+docker-compose up -d
+docker-compose top
+docker-compose images
+docker-compose logs
+
+
+DOCKER HUB: To store our images on central
+
+1. CREATE IMAGE & REPO
+2. TAG IMAGE (docker tag recharge:v1 apn2993/paytm)
+3. docker login (username & password)
+4. docker push apn2993/paytm
+
+NOTE: DockerHub will support only image for one repo.
+
+NETWORK:
+
+Docker networks are used to make a communication between the multiple containers that are running on same or different docker hosts. We have different types of docker networks.
+Bridge Network
+Host Network
+None network
+Overlay network
+
+BRIDGE NETWORK: It is a default network that container will communicate with each other within the same host.
+
+HOST NETWORK: When you Want your container IP and ec2 instance IP same then you use host network
+
+NONE NETWORK: When you don’t Want The container to get exposed to the world, we use none network. It will not provide any network to our container.
+
+OVERLAY NETWORK: Used to communicate containers with each other across the multiple docker hosts.
+
+To create a network: docker network create network_name
+To see the list: docker network ls
+To delete a network: docker network rm network_name
+To inspect: docker network inspect network_name
+To connect a container to the network: docker network connect network_name container_id/name
+apt install iputils-ping -y : command to install ping checks
+To disconnect from the container: docker network disconnect network_name container_name
+To prune: docker network prune
+
+============================================================================================================
+
+  DAY-05:
+  
+  SWARM: Used to manage contaienrs on multiple servers.
+MASTER: Used to create and distribute the containers.
+WORKER: Used to Store container.
+NOTE: To work with DS we need to enable Docker Engine.
+If we delete one container it will create onother.
+
+CLUSTER: Group of servers.
+REPLICA: Copy of the Conatiner.
+
+
+ 
+STEP-1: CRAETE 3 SERVERS (1 MANAGER, 2 WORKERS)
+STEP-2: SET HOSTNAMES (hostnamectl set-hostname manager/worker1/worker2) && sudo -i
+STEP-3: INSTALL AND START DOCKER
+STEP-4: SETUP A CLUSTER (Manager -- > token -- > copy to worker node)
+
+docker swarm init --advertise-addr 172.31.87.191 (PRIVATE IP)	
+
+docker node ls : TO list number of worker nodes
+docker service create --name paytm --publish 81:80 --replicas 3 rahamshaik/paytmmsmovies:latest
+docker sevice ls : To list the services
+docker service scale paytm=10 : To scale the services
+docker service ps paytm : To list containers of Paytm Service only
+docker service inspect paytm : To get the complet info of service
+docker service update --image rahamshaik/nitdevops:latest paytm : To update the image
+docker service rollback  paytm : To Rollback
