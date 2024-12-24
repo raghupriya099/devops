@@ -1,0 +1,42 @@
+Intro, Workflow (add, commit, restore, logs)
+
+yum install git -y : Command to install git
+git init : to install empty .git repo
+
+git status : To check the status of a file
+
+Red : Untracked
+Green : Tracked
+
+git add java1 : to track the file
+git commit -m "commit-1" java1 : to commit the file
+git log : to check commit history
+git log --oneline : to see commits on sinlge line
+git log -2 : to show last 2 commits
+git log -2 --oneline : to show last 2 commits on oneline
+
+
+create a file -- > add -- > commit 
+
+
+TO CONFIGURE USER & EMAIL: 
+git config user.name "raham"
+git config user.email "raham@gmail"
+
+Note: The old commits will not change 
+
+GIT IGNORE: to ignore some specific files
+it will not track and commits your files
+but it will keep them on your folder
+
+NOTE: .gitignore 
+(. is mandatory)
+
+vim .gitignore
+
+js*
+
+git status
+
+RESTORE: To move back from tacking to untracking 
+git restore --staged raham
