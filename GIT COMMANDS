@@ -20,8 +20,8 @@ create a file -- > add -- > commit
 
 
 TO CONFIGURE USER & EMAIL: 
-git config user.name "raham"
-git config user.email "raham@gmail"
+git config user.name "raghu"
+git config user.email "raghu@gmail"
 
 Note: The old commits will not change 
 
@@ -39,4 +39,56 @@ js*
 git status
 
 RESTORE: To move back from tacking to untracking 
-git restore --staged raham
+git restore --staged raghu
+
+===============================================================
+
+DAY-02: BRACHES, MEREGE, REBASE, GITHUB
+
+BRANCH: It is an individual line of development.
+developers can develop the source code independently.
+Default branch -- > Master 
+master & main branches are called as long living branches
+dev, qa, hotfix, release branches are called as short-living branches.
+
+git branch: to list the branches
+git branch movies: to create a branch called movies
+git checkout movies: to switch to branch called movies
+git checkout -b recharge: to create and switch at a time.
+
+
+
+
+MERGE: Used to merge file blw two branches
+
+git checkout master
+git merge movies
+git merge train
+
+
+REBASE: Used to merge file blw two branches
+git rebase recharge
+git rebase dth
+
+============================================================================
+
+DAY-03: PULL, PUSH, REVERT, CHERRYPICK, STASH & SOME UI CONECOTS OF GITHUB
+ 
+ REVERT: To undo the merging of two branches
+git revert branchname
+
+CHERRY-PICK: To MERGE SPECIFIC FILES 
+git cherry-pick commit-id
+
+STATSH: To hide the un committed files/to save the work temperorly
+git stash	: to hide the tracked files
+git stash apply	: it will show the hidede file
+git stash list	: it shows the list of stashes
+git stash pop	: remove last stash
+git statsh clear: remove all the stashes
+
+PUSH: to send files from local to central repo
+git push origin branchname
+
+PULL: it will get changes from central to local.
+git pull origin branchname
